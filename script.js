@@ -14,31 +14,36 @@ async function sendMessage() {
   const message = userInput.value.trim();
   if (message === "") return;
 
-  // Add user's message to chat
   addMessage(message, 'user-message');
   userInput.value = "";
 
-  // Send message to Grog AI API
   try {
-    const response = await fetch('https://api.grog.ai/v1/chat/completions', {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer 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'
       },
       body: JSON.stringify({
-        model: "grog-gpt-3.5-turbo",
+        model: "llama-3-70b-8192", // or use "llama-3.3-70b-versatile" if you want
         messages: [{ role: "user", content: message }]
       })
     });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('API Error:', errorData);
+      addMessage(`Error: ${errorData.error?.message || 'Unknown error'}`, 'bot-message');
+      return;
+    }
 
     const data = await response.json();
     const botReply = data.choices[0].message.content;
     addMessage(botReply, 'bot-message');
 
   } catch (error) {
-    console.error('Error:', error);
-    addMessage("Error: Could not connect to AI.", 'bot-message');
+    console.error('Network Error:', error);
+    addMessage("Network error: Could not connect to AI.", 'bot-message');
   }
 }
 
@@ -47,5 +52,5 @@ function addMessage(text, className) {
   messageElement.className = `message ${className}`;
   messageElement.textContent = text;
   chatBox.appendChild(messageElement);
-  chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+  chatBox.scrollTop = chatBox.scrollHeight;
 }

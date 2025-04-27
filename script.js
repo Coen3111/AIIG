@@ -25,7 +25,7 @@ async function sendMessage() {
         'Authorization': 'Bearer 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'
       },
       body: JSON.stringify({
-        model: "llama-3-70b-8192", // or use "llama-3.3-70b-versatile" if you want
+        model: "llama3-70b-8192", // 🛠️ correct model name
         messages: [{ role: "user", content: message }]
       })
     });

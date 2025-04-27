@@ -4,38 +4,15 @@
   <meta charset="UTF-8">
   <title>Login - AI Chat</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 <body class="auth-page">
   <div class="auth-container">
     <h1>Login</h1>
-    <div id="google-signin-button"></div>
-    <p>Or</p>
     <input id="login-email" type="email" placeholder="Email">
     <input id="login-password" type="password" placeholder="Password">
     <button onclick="login()">Login</button>
     <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
   </div>
   <script src="script.js"></script>
-  <script>
-    function onSignIn(googleUser) {
-      const profile = googleUser.getBasicProfile();
-      const email = profile.getEmail();
-      const name = profile.getName();
-      localStorage.setItem('userEmail', email);
-      localStorage.setItem('userName', name);
-      window.location.href = 'chat.html';
-    }
-
-    function renderButton() {
-      gapi.signin2.render('google-signin-button', {
-        'scope': 'profile email',
-        'longtitle': true,
-        'theme': 'dark',
-        'onsuccess': onSignIn
-      });
-    }
-    renderButton();
-  </script>
 </body>
 </html>

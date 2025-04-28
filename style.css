@@ -1,137 +1,146 @@
-/* Global Styles */
+/* Global styles */
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f9f9f9;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f7f7f8;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
-/* Login/Signup/Chat Pages Container */
-.auth-container, .chat-container, .upgrade-container {
-    width: 90%;
-    max-width: 600px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+h1, h2 {
+  color: #333;
 }
 
-/* Input & Buttons */
-input, textarea, button {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-textarea {
-    resize: none;
+.container {
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
 }
 
 button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s;
+  padding: 12px 24px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 8px;
+  transition: background-color 0.3s;
 }
 
 button:hover {
-    background-color: #0056b3;
+  background-color: #0056b3;
 }
 
-/* Sidebar */
-.sidebar {
-    width: 20%;
-    background-color: #f4f4f4;
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-right: 20px;
+input {
+  padding: 12px 20px;
+  margin: 10px 0;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
 }
 
-.chat-item {
-    margin: 10px 0;
-    padding: 5px;
-    background-color: #e9ecef;
-    border-radius: 5px;
-    cursor: pointer;
+input:focus {
+  outline: none;
+  border-color: #007bff;
 }
 
-.chat-item:hover {
-    background-color: #d6d9db;
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 600px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  height: 500px;
+  overflow-y: auto;
 }
 
-/* Chat Box */
-.chat-box {
-    width: 75%;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 10px;
-    height: 400px;
-    overflow-y: auto;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.message {
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 5px;
+.chat-message {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 8px;
+  max-width: 80%;
 }
 
 .user-message {
-    background-color: #d1ecf1;
+  background-color: #007bff;
+  color: white;
+  align-self: flex-start;
 }
 
 .bot-message {
-    background-color: #f8d7da;
+  background-color: #f1f1f1;
+  color: #333;
+  align-self: flex-end;
 }
 
-input:focus, button:focus {
-    outline: none;
-    border-color: #007bff;
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
-/* Code block styles */
-.code-block {
-    background-color: #f1f1f1;
-    padding: 15px;
-    border-radius: 5px;
-    margin-top: 10px;
+#send-btn {
+  display: inline-block;
+  margin-top: 10px;
+  text-align: center;
 }
 
-.copy-btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+input#user-input {
+  width: calc(100% - 100px);
+  margin-right: 10px;
 }
 
-.copy-btn:hover {
-    background-color: #0056b3;
+#chat-box {
+  overflow-y: auto;
+  height: 80%;
 }
 
-/* Upgrade Page */
-.upgrade-container {
-    text-align: center;
+.sidebar {
+  width: 200px;
+  background-color: #ffffff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.upgrade-btn {
-    background-color: #28a745;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
+.sidebar .chat-item {
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #f1f1f1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.upgrade-btn:hover {
-    background-color: #218838;
+.sidebar .chat-item:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.upgrade-button {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 18px;
+}
+
+.upgrade-button a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
 }

@@ -1,103 +1,65 @@
-// === LOGIN / SIGNUP ===
+const basePrompt = "You are a helpful assistant like ChatGPT. Be smart, clear, and helpful.";
+let chats = [];
 
-function signup() {
-  const email = document.getElementById('signup-email').value;
-  const password = document.getElementById('signup-password').value;
+document.addEventListener('DOMContentLoaded', () => {
+    const chatForm = document.getElementById('chatForm');
+    if (chatForm) {
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('userInput');
+            const userMessage = input.value.trim();
+            if (!userMessage) return;
+            addMessage('user', userMessage);
+            input.value = '';
 
-  if (email && password) {
-    localStorage.setItem('userEmail', email);
-    localStorage.setItem('userPassword', password);
-    alert('Account created successfully!');
-    window.location.href = 'login.html';
-  } else {
-    alert('Please fill out all fields.');
-  }
-}
+            const fullPrompt = basePrompt + "\n\nUser: " + userMessage;
 
-function login() {
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
+            // Here you call Groq or any backend you use
+            const aiResponse = await fakeAIResponse(fullPrompt);
 
-  const storedEmail = localStorage.getItem('userEmail');
-  const storedPassword = localStorage.getItem('userPassword');
-
-  if (email === storedEmail && password === storedPassword) {
-    alert('Login successful!');
-    window.location.href = 'chat.html';
-  } else {
-    alert('Invalid credentials!');
-  }
-}
-
-function logout() {
-  window.location.href = 'login.html';
-}
-
-// === CHAT ===
-
-const sendBtn = document.getElementById('send-btn');
-const userInput = document.getElementById('user-input');
-const chatBox = document.getElementById('chat-box');
-
-if (sendBtn) {
-  sendBtn.addEventListener('click', sendMessage);
-  userInput.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+            addMessage('ai', aiResponse);
+        });
     }
-  });
+});
+
+function addMessage(role, content) {
+    const chatMessages = document.getElementById('chatMessages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = role === 'user' ? 'user-message' : 'ai-message';
+
+    // Handle code blocks
+    if (content.includes('```')) {
+        const codeContent = content.split('```')[1];
+        msgDiv.innerHTML = `
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                <pre>${codeContent}</pre>
+            </div>
+        `;
+    } else {
+        msgDiv.textContent = content;
+    }
+
+    chatMessages.appendChild(msgDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-async function sendMessage() {
-  const message = userInput.value.trim();
-  if (message === "") return;
+function copyToClipboard(button) {
+    const code = button.parentElement.querySelector('pre').innerText;
+    navigator.clipboard.writeText(code);
+    button.textContent = 'Copied!';
+    setTimeout(() => button.textContent = 'Copy', 2000);
+}
 
-  addMessage(message, 'user-message');
-  userInput.value = "";
-
-  addMessage("Typing...", 'bot-message', true);
-
-  try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer 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'
-      },
-      body: JSON.stringify({
-        model: "llama3-70b-8192",
-        messages: [{ role: "user", content: message }]
-      })
+// fake AI response
+async function fakeAIResponse(prompt) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve("This is a fake AI response based on your prompt: " + prompt);
+        }, 1000);
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('API Error:', errorData);
-      updateLastBotMessage(`Error: ${errorData.error?.message || 'Unknown error'}`);
-      return;
-    }
-
-    const data = await response.json();
-    const botReply = data.choices[0].message.content;
-    updateLastBotMessage(botReply);
-
-  } catch (error) {
-    console.error('Network Error:', error);
-    updateLastBotMessage("Network error: Could not connect to AI.");
-  }
 }
 
-function addMessage(text, className, isLoading = false) {
-  const messageElement = document.createElement('div');
-  messageElement.className = `message ${className}`;
-  messageElement.textContent = text;
-  chatBox.appendChild(messageElement);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-function updateLastBotMessage(newText) {
-  const messages = document.querySelectorAll('.bot-message');
-  const lastBot = messages[messages.length - 1];
-  if (lastBot) lastBot.textContent = newText;
+function newChat() {
+    document.getElementById('chatMessages').innerHTML = '';
 }

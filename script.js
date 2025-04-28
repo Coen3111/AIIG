@@ -1,137 +1,153 @@
-const basePrompt = "You are a helpful assistant like ChatGPT. Be smart, clear, and helpful.";
+// --- Configuration ---
+const GROQ_API_KEY = "YOUR_GROQ_API_KEY_HERE"; // 🔥 Replace with your real Groq API key
+const BASE_BEHAVIOR = "You are a helpful, smart, friendly assistant like ChatGPT.";
 let chats = [];
 
-// Run when the page loads
+// --- DOM Ready ---
 document.addEventListener('DOMContentLoaded', () => {
+    setupForms();
+    if (document.getElementById('chatForm')) {
+        loadChats();
+    }
+});
+
+// --- Setup all forms ---
+function setupForms() {
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
     const settingsForm = document.getElementById('settingsForm');
     const chatForm = document.getElementById('chatForm');
 
-    // LOGIN
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = loginForm.querySelector('input[type="email"]').value;
-            const password = loginForm.querySelector('input[type="password"]').value;
-            const savedUser = JSON.parse(localStorage.getItem('user'));
+    if (signupForm) signupForm.addEventListener('submit', handleSignup);
+    if (loginForm) loginForm.addEventListener('submit', handleLogin);
+    if (settingsForm) settingsForm.addEventListener('submit', handleSettingsSave);
+    if (chatForm) chatForm.addEventListener('submit', handleChatSubmit);
+}
 
-            if (savedUser && savedUser.email === email && savedUser.password === password) {
-                window.location.href = 'chat.html'; // ✅ Login success
-            } else {
-                alert('Invalid email or password');
-            }
-        });
+// --- Signup ---
+function handleSignup(e) {
+    e.preventDefault();
+    const email = e.target.querySelector('input[type="email"]').value;
+    const password = e.target.querySelector('input[type="password"]').value;
+
+    localStorage.setItem('user', JSON.stringify({ email, password }));
+    alert('Account created! You can now login.');
+    window.location.href = 'index.html';
+}
+
+// --- Login ---
+function handleLogin(e) {
+    e.preventDefault();
+    const email = e.target.querySelector('input[type="email"]').value;
+    const password = e.target.querySelector('input[type="password"]').value;
+    const savedUser = JSON.parse(localStorage.getItem('user'));
+
+    if (savedUser && savedUser.email === email && savedUser.password === password) {
+        window.location.href = 'chat.html';
+    } else {
+        alert('Invalid email or password.');
     }
+}
 
-    // SIGN UP
-    if (signupForm) {
-        signupForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = signupForm.querySelector('input[type="email"]').value;
-            const password = signupForm.querySelector('input[type="password"]').value;
+// --- Settings Save ---
+function handleSettingsSave(e) {
+    e.preventDefault();
+    const behavior = document.getElementById('aiBehavior').value;
+    localStorage.setItem('aiBehavior', behavior);
+    alert('Settings saved!');
+}
 
-            localStorage.setItem('user', JSON.stringify({ email, password }));
-            alert('Account created! You can now login.');
-            window.location.href = 'index.html'; // redirect to login
-        });
-    }
+// --- Chat Submit ---
+async function handleChatSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById('userInput');
+    const userMessage = input.value.trim();
+    if (!userMessage) return;
 
-    // SETTINGS (AI Behavior)
-    if (settingsForm) {
-        settingsForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const behavior = document.getElementById('aiBehavior').value;
-            localStorage.setItem('aiBehavior', behavior);
-            alert('Settings saved!');
-        });
+    addMessage('user', userMessage);
+    input.value = '';
 
-        // Load saved behavior if exists
-        const savedBehavior = localStorage.getItem('aiBehavior');
-        if (savedBehavior) {
-            document.getElementById('aiBehavior').value = savedBehavior;
-        }
-    }
+    const behavior = localStorage.getItem('aiBehavior') || BASE_BEHAVIOR;
+    const aiReply = await getAIResponse(behavior, userMessage);
 
-    // CHAT
-    if (chatForm) {
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const input = document.getElementById('userInput');
-            const userMessage = input.value.trim();
-            if (!userMessage) return;
-            addMessage('user', userMessage);
-            input.value = '';
+    addMessage('ai', aiReply);
+}
 
-            let behavior = localStorage.getItem('aiBehavior') || basePrompt;
-            const fullPrompt = behavior + "\n\nUser: " + userMessage;
-
-            const aiResponse = await fakeAIResponse(fullPrompt);
-
-            addMessage('ai', aiResponse);
-        });
-
-        loadOldChats(); // Load chats when you open chat page
-    }
-});
-
-// Add a message to the chat
+// --- Add a Message ---
 function addMessage(role, content) {
-    const chatMessages = document.getElementById('chatMessages');
-    const msgDiv = document.createElement('div');
-    msgDiv.className = role === 'user' ? 'user-message' : 'ai-message';
+    const chatBox = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = role === 'user' ? 'user-message' : 'ai-message';
 
-    // Handle code blocks
     if (content.includes('```')) {
         const codeContent = content.split('```')[1];
-        msgDiv.innerHTML = `
+        messageDiv.innerHTML = `
             <div class="code-block">
                 <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
                 <pre>${codeContent}</pre>
             </div>
         `;
     } else {
-        msgDiv.textContent = content;
+        messageDiv.textContent = content;
     }
 
-    chatMessages.appendChild(msgDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
 
-    // Save to local storage
     chats.push({ role, content });
     localStorage.setItem('chats', JSON.stringify(chats));
 }
 
-// Copy code button
+// --- Copy code block ---
 function copyToClipboard(button) {
     const code = button.parentElement.querySelector('pre').innerText;
-    navigator.clipboard.writeText(code);
-    button.textContent = 'Copied!';
-    setTimeout(() => button.textContent = 'Copy', 2000);
+    navigator.clipboard.writeText(code)
+        .then(() => {
+            button.textContent = "Copied!";
+            setTimeout(() => { button.textContent = "Copy"; }, 2000);
+        });
 }
 
-// Load old chats from local storage
-function loadOldChats() {
+// --- Load old chats ---
+function loadChats() {
     const savedChats = JSON.parse(localStorage.getItem('chats')) || [];
     chats = savedChats;
-
-    for (const chat of chats) {
-        addMessage(chat.role, chat.content);
-    }
+    chats.forEach(chat => addMessage(chat.role, chat.content));
 }
 
-// Create new chat
+// --- Start new chat ---
 function newChat() {
     chats = [];
     localStorage.removeItem('chats');
     document.getElementById('chatMessages').innerHTML = '';
 }
 
-// Simulate AI response
-async function fakeAIResponse(prompt) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve("🤖 AI says: This is a fake response based on: " + prompt);
-        }, 1000);
-    });
+// --- Fetch real AI response from Groq ---
+async function getAIResponse(systemPrompt, userPrompt) {
+    try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${GROQ_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'llama3-70b-8192',
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Error from AI API');
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content.trim();
+    } catch (error) {
+        console.error(error);
+        return "⚠️ Error contacting AI server. Try again.";
+    }
 }

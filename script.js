@@ -4,11 +4,10 @@ function signup() {
   const password = document.getElementById('signup-password').value;
 
   if (email && password) {
-    // Save user credentials in localStorage (simulating a simple signup process)
     localStorage.setItem('userEmail', email);
     localStorage.setItem('userPassword', password);
     alert('Account created successfully!');
-    window.location.href = 'login.html';  // Redirect to login after successful signup
+    window.location.href = 'login.html';  
   } else {
     alert('Please fill out all fields.');
   }
@@ -19,13 +18,12 @@ function login() {
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
 
-  // Retrieve the stored credentials from localStorage
   const storedEmail = localStorage.getItem('userEmail');
   const storedPassword = localStorage.getItem('userPassword');
 
   if (email === storedEmail && password === storedPassword) {
     alert('Login successful!');
-    window.location.href = 'chat.html';  // Redirect to chat page upon successful login
+    window.location.href = 'chat.html';
   } else {
     alert('Invalid credentials!');
   }
@@ -33,7 +31,6 @@ function login() {
 
 // === LOGOUT ===
 function logout() {
-  // Clear stored credentials and redirect to login page
   localStorage.removeItem('userEmail');
   localStorage.removeItem('userPassword');
   window.location.href = 'login.html';
@@ -96,7 +93,17 @@ async function sendMessage() {
 function addMessage(text, className, isLoading = false) {
   const messageElement = document.createElement('div');
   messageElement.className = `message ${className}`;
-  messageElement.textContent = text;
+  
+  // If the message is code, style it in a code box
+  if (className === 'bot-message' && text.includes('```')) {
+    const codeBox = document.createElement('pre');
+    codeBox.className = 'code-box';
+    codeBox.textContent = text; // AI code in pre-formatted style
+    messageElement.appendChild(codeBox);
+  } else {
+    messageElement.textContent = text;
+  }
+
   chatBox.appendChild(messageElement);
   chatBox.scrollTop = chatBox.scrollHeight;
 }

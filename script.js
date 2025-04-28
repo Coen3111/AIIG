@@ -1,3 +1,45 @@
+// === SIGNUP ===
+function signup() {
+  const email = document.getElementById('signup-email').value;
+  const password = document.getElementById('signup-password').value;
+
+  if (email && password) {
+    // Save user credentials in localStorage (simulating a simple signup process)
+    localStorage.setItem('userEmail', email);
+    localStorage.setItem('userPassword', password);
+    alert('Account created successfully!');
+    window.location.href = 'login.html';  // Redirect to login after successful signup
+  } else {
+    alert('Please fill out all fields.');
+  }
+}
+
+// === LOGIN ===
+function login() {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+
+  // Retrieve the stored credentials from localStorage
+  const storedEmail = localStorage.getItem('userEmail');
+  const storedPassword = localStorage.getItem('userPassword');
+
+  if (email === storedEmail && password === storedPassword) {
+    alert('Login successful!');
+    window.location.href = 'chat.html';  // Redirect to chat page upon successful login
+  } else {
+    alert('Invalid credentials!');
+  }
+}
+
+// === LOGOUT ===
+function logout() {
+  // Clear stored credentials and redirect to login page
+  localStorage.removeItem('userEmail');
+  localStorage.removeItem('userPassword');
+  window.location.href = 'login.html';
+}
+
+// === CHAT ===
 const sendBtn = document.getElementById('send-btn');
 const userInput = document.getElementById('user-input');
 const chatBox = document.getElementById('chat-box');
@@ -54,29 +96,7 @@ async function sendMessage() {
 function addMessage(text, className, isLoading = false) {
   const messageElement = document.createElement('div');
   messageElement.className = `message ${className}`;
-
-  if (className === 'bot-message') {
-    const aiName = document.createElement('strong');
-    aiName.textContent = 'Groq AI: ';
-    messageElement.appendChild(aiName);
-  }
-
-  if (text.includes("```")) {
-    const codeBlock = document.createElement('pre');
-    const codeContent = text.replace(/```/g, "");
-    codeBlock.className = 'code-block';
-    codeBlock.textContent = codeContent;
-    messageElement.appendChild(codeBlock);
-
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'copy-btn';
-    copyBtn.textContent = 'Copy Code';
-    copyBtn.onclick = () => copyToClipboard(codeContent);
-    messageElement.appendChild(copyBtn);
-  } else {
-    messageElement.textContent += text;
-  }
-
+  messageElement.textContent = text;
   chatBox.appendChild(messageElement);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -85,12 +105,4 @@ function updateLastBotMessage(newText) {
   const messages = document.querySelectorAll('.bot-message');
   const lastBot = messages[messages.length - 1];
   if (lastBot) lastBot.textContent = newText;
-}
-
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    alert("Code copied to clipboard!");
-  }).catch(err => {
-    console.error("Error copying code: ", err);
-  });
 }

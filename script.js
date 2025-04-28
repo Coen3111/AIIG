@@ -1,164 +1,165 @@
-/* Global styles */
-body {
-  font-family: 'Arial', sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f7f7f8;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  overflow: hidden;
+// === LOGIN / SIGNUP ===
+
+function signup() {
+  const email = document.getElementById('signup-email').value;
+  const password = document.getElementById('signup-password').value;
+
+  if (email && password) {
+    localStorage.setItem('userEmail', email);
+    localStorage.setItem('userPassword', password);
+    alert('Account created successfully!');
+    window.location.href = 'login.html';
+  } else {
+    alert('Please fill out all fields.');
+  }
 }
 
-.container {
-  width: 100%;
-  max-width: 1200px;
-  padding: 20px;
+function login() {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+
+  const storedEmail = localStorage.getItem('userEmail');
+  const storedPassword = localStorage.getItem('userPassword');
+
+  if (email === storedEmail && password === storedPassword) {
+    alert('Login successful!');
+    window.location.href = 'chat.html';
+  } else {
+    alert('Invalid credentials!');
+  }
 }
 
-/* Chatbox and message styles */
-.chat-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  width: 100%;
-  max-width: 600px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  height: 500px;
-  overflow-y: auto;
+function logout() {
+  window.location.href = 'login.html';
 }
 
-.chat-message {
-  padding: 12px;
-  margin: 5px;
-  border-radius: 8px;
-  max-width: 80%;
+// === CHAT ===
+
+const sendBtn = document.getElementById('send-btn');
+const userInput = document.getElementById('user-input');
+const chatBox = document.getElementById('chat-box');
+const sidebar = document.getElementById('sidebar');
+let chats = [];
+
+if (sendBtn) {
+  sendBtn.addEventListener('click', sendMessage);
+  userInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
 }
 
-.user-message {
-  background-color: #007bff;
-  color: white;
-  align-self: flex-start;
+async function sendMessage() {
+  const message = userInput.value.trim();
+  if (message === "") return;
+
+  addMessage(message, 'user-message');
+  userInput.value = "";
+
+  addMessage("Thinking...", 'bot-message', true);
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer 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'
+      },
+      body: JSON.stringify({
+        model: "llama3-70b-8192",
+        messages: [{ role: "user", content: message }]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('API Error:', errorData);
+      updateLastBotMessage(`Error: ${errorData.error?.message || 'Unknown error'}`);
+      return;
+    }
+
+    const data = await response.json();
+    const botReply = data.choices[0].message.content;
+
+    // Check if it's code, and display it accordingly
+    if (isCode(botReply)) {
+      addMessageWithCode(botReply);
+    } else {
+      updateLastBotMessage(botReply);
+    }
+
+    // Save chat history
+    chats.push({ user: message, bot: botReply });
+    localStorage.setItem('chats', JSON.stringify(chats));
+
+    renderSidebar();
+
+  } catch (error) {
+    console.error('Network Error:', error);
+    updateLastBotMessage("Network error: Could not connect to AI.");
+  }
 }
 
-.bot-message {
-  background-color: #f1f1f1;
-  color: #333;
-  align-self: flex-end;
+function addMessage(text, className, isLoading = false) {
+  const messageElement = document.createElement('div');
+  messageElement.className = `message ${className}`;
+  messageElement.textContent = text;
+  chatBox.appendChild(messageElement);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-.chat-box {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
+function updateLastBotMessage(newText) {
+  const messages = document.querySelectorAll('.bot-message');
+  const lastBot = messages[messages.length - 1];
+  if (lastBot) lastBot.textContent = newText;
 }
 
-#send-btn {
-  display: inline-block;
-  margin-top: 10px;
-  text-align: center;
+function addMessageWithCode(code) {
+  const codeElement = document.createElement('pre');
+  codeElement.className = 'code-block';
+  codeElement.textContent = code;
+
+  const copyButton = document.createElement('button');
+  copyButton.className = 'copy-btn';
+  copyButton.textContent = 'Copy';
+  copyButton.addEventListener('click', () => copyToClipboard(code));
+
+  const codeContainer = document.createElement('div');
+  codeContainer.appendChild(codeElement);
+  codeContainer.appendChild(copyButton);
+  chatBox.appendChild(codeContainer);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-input#user-input {
-  width: calc(100% - 100px);
-  margin-right: 10px;
+function isCode(text) {
+  return text.trim().startsWith("```");
 }
 
-#chat-box {
-  overflow-y: auto;
-  height: 80%;
+function copyToClipboard(code) {
+  navigator.clipboard.writeText(code).then(() => {
+    alert('Code copied!');
+  }, () => {
+    alert('Failed to copy code!');
+  });
 }
 
-/* Search Bar Styles */
-.search-bar {
-  padding: 10px;
-  width: 100%;
-  margin: 20px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-  background-color: #ffffff;
+// Render Sidebar with Chat History
+function renderSidebar() {
+  sidebar.innerHTML = '';
+  chats.forEach((chat, index) => {
+    const chatItem = document.createElement('div');
+    chatItem.className = 'chat-item';
+    chatItem.textContent = `Chat ${index + 1}`;
+    chatItem.addEventListener('click', () => loadChat(index));
+    sidebar.appendChild(chatItem);
+  });
 }
 
-.search-bar:focus {
-  outline: none;
-  border-color: #007bff;
-}
-
-/* Code Block Styling */
-pre {
-  background-color: #2d2d2d;
-  color: #f8f8f2;
-  padding: 15px;
-  border-radius: 8px;
-  overflow-x: auto;
-  font-size: 14px;
-  font-family: 'Courier New', Courier, monospace;
-  white-space: pre-wrap;
-}
-
-code {
-  color: #f8f8f2;
-  font-family: 'Courier New', Courier, monospace;
-}
-
-button.copy-btn {
-  background-color: #28a745;
-  color: white;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button.copy-btn:hover {
-  background-color: #218838;
-}
-
-/* Sidebar Styling */
-.sidebar {
-  width: 200px;
-  background-color: #ffffff;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  position: fixed;
-  top: 0;
-  right: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar .chat-item {
-  padding: 10px;
-  margin: 10px 0;
-  background-color: #f1f1f1;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.sidebar .chat-item:hover {
-  background-color: #007bff;
-  color: white;
-}
-
-/* Upgrade Button Styles */
-.upgrade-button {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 18px;
-}
-
-.upgrade-button a {
-  color: #007bff;
-  text-decoration: none;
-  font-weight: bold;
+function loadChat(index) {
+  const chat = chats[index];
+  chatBox.innerHTML = '';
+  addMessage(chat.user, 'user-message');
+  addMessage(chat.bot, 'bot-message');
 }

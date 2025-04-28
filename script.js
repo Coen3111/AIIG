@@ -1,45 +1,6 @@
-// === LOGIN / SIGNUP ===
-
-function signup() {
-  const email = document.getElementById('signup-email').value;
-  const password = document.getElementById('signup-password').value;
-
-  if (email && password) {
-    localStorage.setItem('userEmail', email);
-    localStorage.setItem('userPassword', password);
-    alert('Account created successfully!');
-    window.location.href = 'login.html';
-  } else {
-    alert('Please fill out all fields.');
-  }
-}
-
-function login() {
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
-
-  const storedEmail = localStorage.getItem('userEmail');
-  const storedPassword = localStorage.getItem('userPassword');
-
-  if (email === storedEmail && password === storedPassword) {
-    alert('Login successful!');
-    window.location.href = 'chat.html';
-  } else {
-    alert('Invalid credentials!');
-  }
-}
-
-function logout() {
-  window.location.href = 'login.html';
-}
-
-// === CHAT ===
-
 const sendBtn = document.getElementById('send-btn');
 const userInput = document.getElementById('user-input');
 const chatBox = document.getElementById('chat-box');
-const sidebar = document.getElementById('sidebar');
-let chats = [];
 
 if (sendBtn) {
   sendBtn.addEventListener('click', sendMessage);
@@ -82,19 +43,7 @@ async function sendMessage() {
 
     const data = await response.json();
     const botReply = data.choices[0].message.content;
-
-    // Check if it's code, and display it accordingly
-    if (isCode(botReply)) {
-      addMessageWithCode(botReply);
-    } else {
-      updateLastBotMessage(botReply);
-    }
-
-    // Save chat history
-    chats.push({ user: message, bot: botReply });
-    localStorage.setItem('chats', JSON.stringify(chats));
-
-    renderSidebar();
+    updateLastBotMessage(botReply);
 
   } catch (error) {
     console.error('Network Error:', error);
@@ -105,7 +54,29 @@ async function sendMessage() {
 function addMessage(text, className, isLoading = false) {
   const messageElement = document.createElement('div');
   messageElement.className = `message ${className}`;
-  messageElement.textContent = text;
+
+  if (className === 'bot-message') {
+    const aiName = document.createElement('strong');
+    aiName.textContent = 'Groq AI: ';
+    messageElement.appendChild(aiName);
+  }
+
+  if (text.includes("```")) {
+    const codeBlock = document.createElement('pre');
+    const codeContent = text.replace(/```/g, "");
+    codeBlock.className = 'code-block';
+    codeBlock.textContent = codeContent;
+    messageElement.appendChild(codeBlock);
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.textContent = 'Copy Code';
+    copyBtn.onclick = () => copyToClipboard(codeContent);
+    messageElement.appendChild(copyBtn);
+  } else {
+    messageElement.textContent += text;
+  }
+
   chatBox.appendChild(messageElement);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -116,50 +87,10 @@ function updateLastBotMessage(newText) {
   if (lastBot) lastBot.textContent = newText;
 }
 
-function addMessageWithCode(code) {
-  const codeElement = document.createElement('pre');
-  codeElement.className = 'code-block';
-  codeElement.textContent = code;
-
-  const copyButton = document.createElement('button');
-  copyButton.className = 'copy-btn';
-  copyButton.textContent = 'Copy';
-  copyButton.addEventListener('click', () => copyToClipboard(code));
-
-  const codeContainer = document.createElement('div');
-  codeContainer.appendChild(codeElement);
-  codeContainer.appendChild(copyButton);
-  chatBox.appendChild(codeContainer);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-function isCode(text) {
-  return text.trim().startsWith("```");
-}
-
-function copyToClipboard(code) {
-  navigator.clipboard.writeText(code).then(() => {
-    alert('Code copied!');
-  }, () => {
-    alert('Failed to copy code!');
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Code copied to clipboard!");
+  }).catch(err => {
+    console.error("Error copying code: ", err);
   });
-}
-
-// Render Sidebar with Chat History
-function renderSidebar() {
-  sidebar.innerHTML = '';
-  chats.forEach((chat, index) => {
-    const chatItem = document.createElement('div');
-    chatItem.className = 'chat-item';
-    chatItem.textContent = `Chat ${index + 1}`;
-    chatItem.addEventListener('click', () => loadChat(index));
-    sidebar.appendChild(chatItem);
-  });
-}
-
-function loadChat(index) {
-  const chat = chats[index];
-  chatBox.innerHTML = '';
-  addMessage(chat.user, 'user-message');
-  addMessage(chat.bot, 'bot-message');
 }

@@ -1,34 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Chat</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <link href="style.css" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chat - Groq AI</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1>Welcome to the Interactive Chat</h1>
-    </div>
-
+  <div class="container">
     <div class="chat-container">
-        <div class="chat-box" id="chat-box"></div>
-    </div>
+      <!-- Header -->
+      <header>
+        <h1>Groq AI Chat</h1>
+      </header>
 
-    <div class="input-container">
-        <input type="text" id="user-input" placeholder="Type a message..." />
+      <!-- Chat Box -->
+      <div class="chat-box" id="chat-box"></div>
+
+      <!-- Message Input -->
+      <div class="input-container">
+        <input type="text" id="user-input" placeholder="Ask me anything..." autofocus>
         <button id="send-btn">Send</button>
+      </div>
     </div>
-    
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar"></div>
-</div>
 
-<script src="script.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js"></script>
+    <!-- Sidebar (Chat History) -->
+    <div class="sidebar" id="sidebar">
+      <div class="search-bar">
+        <input type="text" placeholder="Search chats..." id="search-bar">
+      </div>
+      <div class="upgrade-button">
+        <a href="#">Upgrade Now for More Features</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="script.js"></script>
 
 </body>
 </html>

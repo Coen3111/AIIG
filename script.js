@@ -143,4 +143,40 @@ function copyCode(button) {
 // Save Chat
 function saveChat(userMsg, botMsg) {
   chats.push({ user: userMsg, bot: botMsg });
-  localStorage.setItem('chats', JSON
+  localStorage.setItem('chats', JSON.stringify(chats));
+  renderSidebar();
+}
+
+// Load Chats from localStorage
+function loadChats() {
+  const savedChats = localStorage.getItem('chats');
+  if (savedChats) {
+    chats = JSON.parse(savedChats);
+    chats.forEach(chat => {
+      addMessage(chat.user, 'user-message');
+      addMessage(chat.bot, 'bot-message');
+    });
+  }
+}
+
+// Render Sidebar Chat History
+function renderSidebar() {
+  sidebar.innerHTML = '';
+  chats.slice(-5).reverse().forEach((chat, index) => {
+    const chatItem = document.createElement('div');
+    chatItem.className = 'chat-item';
+    chatItem.textContent = chat.user;
+    chatItem.addEventListener('click', () => {
+      chatBox.innerHTML = '';
+      addMessage(chat.user, 'user-message');
+      addMessage(chat.bot, 'bot-message');
+    });
+    sidebar.appendChild(chatItem);
+  });
+}
+
+if (upgradeButton) {
+  upgradeButton.addEventListener('click', () => {
+    window.location.href = 'upgrade.html';
+  });
+}

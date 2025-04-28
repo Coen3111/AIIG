@@ -1,7 +1,9 @@
 // === LOGIN / SIGNUP ===
+
 function signup() {
   const email = document.getElementById('signup-email').value;
   const password = document.getElementById('signup-password').value;
+
   if (email && password) {
     localStorage.setItem('userEmail', email);
     localStorage.setItem('userPassword', password);
@@ -15,8 +17,10 @@ function signup() {
 function login() {
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
+
   const storedEmail = localStorage.getItem('userEmail');
   const storedPassword = localStorage.getItem('userPassword');
+
   if (email === storedEmail && password === storedPassword) {
     alert('Login successful!');
     window.location.href = 'chat.html';
@@ -30,12 +34,11 @@ function logout() {
 }
 
 // === CHAT ===
+
 const sendBtn = document.getElementById('send-btn');
 const userInput = document.getElementById('user-input');
 const chatBox = document.getElementById('chat-box');
 const sidebar = document.getElementById('sidebar');
-const upgradeButton = document.getElementById('upgrade-btn');
-
 let chats = [];
 
 if (sendBtn) {
@@ -46,11 +49,8 @@ if (sendBtn) {
       sendMessage();
     }
   });
-  loadChats();
-  renderSidebar();
 }
 
-// Send Message
 async function sendMessage() {
   const message = userInput.value.trim();
   if (message === "") return;
@@ -84,7 +84,11 @@ async function sendMessage() {
     const botReply = data.choices[0].message.content;
     updateLastBotMessage(botReply);
 
-    saveChat(message, botReply);
+    // Save chat history
+    chats.push({ user: message, bot: botReply });
+    localStorage.setItem('chats', JSON.stringify(chats));
+
+    renderSidebar();
 
   } catch (error) {
     console.error('Network Error:', error);
@@ -92,74 +96,20 @@ async function sendMessage() {
   }
 }
 
-// Add Message
 function addMessage(text, className, isLoading = false) {
   const messageElement = document.createElement('div');
   messageElement.className = `message ${className}`;
-  if (text.includes('```')) {
-    // Code block
-    const codeContent = text.split('```')[1];
-    messageElement.innerHTML = `
-      <div class="code-block">
-        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre>${codeContent}</pre>
-      </div>
-    `;
-  } else {
-    messageElement.textContent = text;
-  }
+  messageElement.textContent = text;
   chatBox.appendChild(messageElement);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Update Bot Reply
 function updateLastBotMessage(newText) {
   const messages = document.querySelectorAll('.bot-message');
   const lastBot = messages[messages.length - 1];
-  if (lastBot) {
-    if (newText.includes('```')) {
-      const codeContent = newText.split('```')[1];
-      lastBot.innerHTML = `
-        <div class="code-block">
-          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-          <pre>${codeContent}</pre>
-        </div>
-      `;
-    } else {
-      lastBot.textContent = newText;
-    }
-  }
+  if (lastBot) lastBot.textContent = newText;
 }
 
-// Copy Code
-function copyCode(button) {
-  const code = button.parentElement.querySelector('pre').innerText;
-  navigator.clipboard.writeText(code).then(() => {
-    button.textContent = 'Copied!';
-    setTimeout(() => { button.textContent = 'Copy'; }, 2000);
-  });
-}
-
-// Save Chat
-function saveChat(userMsg, botMsg) {
-  chats.push({ user: userMsg, bot: botMsg });
-  localStorage.setItem('chats', JSON.stringify(chats));
-  renderSidebar();
-}
-
-// Load Chats from localStorage
-function loadChats() {
-  const savedChats = localStorage.getItem('chats');
-  if (savedChats) {
-    chats = JSON.parse(savedChats);
-    chats.forEach(chat => {
-      addMessage(chat.user, 'user-message');
-      addMessage(chat.bot, 'bot-message');
-    });
-  }
-}
-
-// Render Sidebar Chat History
 function renderSidebar() {
   sidebar.innerHTML = '';
   chats.slice(-5).reverse().forEach((chat, index) => {
@@ -172,11 +122,5 @@ function renderSidebar() {
       addMessage(chat.bot, 'bot-message');
     });
     sidebar.appendChild(chatItem);
-  });
-}
-
-if (upgradeButton) {
-  upgradeButton.addEventListener('click', () => {
-    window.location.href = 'upgrade.html';
   });
 }

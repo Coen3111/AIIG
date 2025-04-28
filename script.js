@@ -99,7 +99,15 @@ function addMessage(text, className, isLoading = false) {
     const codeBox = document.createElement('pre');
     codeBox.className = 'code-box';
     codeBox.textContent = text; // AI code in pre-formatted style
+
+    // Add copy button next to the code box
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.textContent = 'Copy';
+    copyBtn.onclick = () => copyCode(codeBox.textContent);
+
     messageElement.appendChild(codeBox);
+    messageElement.appendChild(copyBtn);
   } else {
     messageElement.textContent = text;
   }
@@ -112,4 +120,15 @@ function updateLastBotMessage(newText) {
   const messages = document.querySelectorAll('.bot-message');
   const lastBot = messages[messages.length - 1];
   if (lastBot) lastBot.textContent = newText;
+}
+
+// Function to copy the code to the clipboard
+function copyCode(code) {
+  const tempTextArea = document.createElement('textarea');
+  document.body.appendChild(tempTextArea);
+  tempTextArea.value = code;
+  tempTextArea.select();
+  document.execCommand('copy');
+  document.body.removeChild(tempTextArea);
+  alert('Code copied to clipboard!');
 }
